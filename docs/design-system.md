@@ -82,7 +82,7 @@ import { colors, spacing, radius, typography, shadows } from '../theme';
 ## 기본 컴포넌트 (`components/ui`)
 
 ```ts
-import { AppText, Button, Card, Chip, Fab, MacroStat, PageDots, ProgressBar, Screen, WeekStrip } from '../components/ui';
+import { AppText, Button, Card, Chip, Fab, IconButton, MacroStat, MonthCalendar, PageDots, ProgressBar, Screen, WeekStrip } from '../components/ui';
 ```
 
 ### AppText
@@ -127,6 +127,20 @@ import { AppText, Button, Card, Chip, Fab, MacroStat, PageDots, ProgressBar, Scr
 <Fab accessibilityLabel="기록 추가" onPress={openAddSheet} />
 ```
 
+### IconButton
+
+글자 없이 아이콘만 있는 작은 버튼(36x36, 아이콘 22). 화면 제목 오른쪽의 보조 동작에 쓴다. `accessibilityLabel`이 필수다.
+
+| prop | 타입 |
+|---|---|
+| `icon` | Ionicons 아이콘 이름 |
+| `accessibilityLabel` | `string` |
+| `onPress` | `() => void` |
+
+```tsx
+<IconButton icon="calendar-outline" accessibilityLabel="운동 캘린더 열기" onPress={openCalendar} />
+```
+
 ### Chip
 
 시간·태그 같은 짧은 메타 정보를 담는 흰색 알약. `label: string`.
@@ -166,6 +180,30 @@ import { AppText, Button, Card, Chip, Fab, MacroStat, PageDots, ProgressBar, Scr
 const [selectedDate, setSelectedDate] = useState(() => new Date());
 <WeekStrip selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 ```
+
+### MonthCalendar
+
+한 달을 일요일 시작 격자로 보여 주는 달력. 위쪽에 "2026년 10월"과 이전·다음 달 버튼이 있다. `WeekStrip`과 같은 규칙으로 선택된 날짜는 검정 원, 오늘은 검정 테두리 원이고, 기록이 있는 날짜에는 숫자 아래에 초록 점이 붙는다. 그 달에 속하지 않는 칸은 비워 둔다.
+
+| prop | 타입 | 설명 |
+|---|---|---|
+| `month` | `Date` | 표시할 달 (일은 무시) |
+| `onChangeMonth` | `(month: Date) => void` | 이전·다음 달 버튼을 누르면 그 달의 1일로 호출 |
+| `selectedDate` | `Date` | 선택된 날짜 |
+| `onSelectDate` | `(date: Date) => void` | 날짜를 누르면 호출 |
+| `markedDates` | `string[]` (선택) | 기록이 있는 날짜. `YYYY-MM-DD` (`utils/date`의 `toDateKey` 형식) |
+
+상태를 갖지 않으므로 표시할 달과 선택된 날짜는 화면이 관리한다. 보통 `Card` 안에 넣어 쓴다.
+
+```tsx
+<Card>
+  <MonthCalendar month={month} onChangeMonth={setMonth} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+</Card>
+```
+
+### DateCircle
+
+날짜 숫자 하나를 그리는 원(38). `WeekStrip`과 `MonthCalendar`가 공유한다. `day`, `selected`, `today`.
 
 ### Screen
 
