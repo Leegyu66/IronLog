@@ -1,0 +1,12 @@
+{
+  "name": "ironlog",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n api,mobile -c blue,magenta \"npm run dev:api\" \"npm run dev:mobile\"",
+    "dev:api": "npm --prefix apps/api run start:dev",
+    "dev:mobile": "npm --prefix apps/mobile start"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
