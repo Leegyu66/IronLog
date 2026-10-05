@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(pnpm -v)",
+      "Bash(yarn -v)",
+      "Bash(git --version)",
+      "Bash(mkdir -p /Users/choi_66/dev/IronLog/apps)",
+      "Bash(npx -y @nestjs/cli@latest new api --package-manager npm --skip-git --skip-install)",
+      "Bash(npx -y create-expo-app@latest mobile --template blank-typescript --no-install)"
+    ]
+  }
+}

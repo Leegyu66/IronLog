@@ -1,17 +1,19 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { AppText, Screen } from '../../components/ui';
+import { spacing } from '../../theme';
 
 export default function MealListScreen() {
   return (
-    <View style={styles.container}>
-      <Text>식단 기록</Text>
-    </View>
+    <Screen>
+      <View style={styles.content}>
+        <AppText variant="display">식단기록</AppText>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  content: {
+    padding: spacing.xl,
   },
 });

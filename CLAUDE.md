@@ -38,11 +38,13 @@ npm run test:e2e                           # vitest.config.e2e.ts, test/**/*.e2e
 
 ```bash
 npm start                    # expo start
+npm run ios                  # iOS 시뮬레이터 (이미 떠 있는 Metro 서버가 있으면 거기에 붙는다)
+npm run android              # Android 에뮬레이터 (가상 기기가 먼저 켜져 있어야 함)
 npx tsc --noEmit             # 타입 체크
 npx expo install <package>   # 의존성 추가는 npm install 대신 항상 이것 사용 (SDK 호환 버전 해석)
 ```
 
-린트는 아직 설정되어 있지 않다 (`npx expo lint`를 처음 실행하면 설정을 생성한다).
+린트와 테스트는 아직 설정되어 있지 않다 (`npx expo lint`를 처음 실행하면 설정을 생성한다). 웹 실행(`npm run web`)은 `react-dom`, `react-native-web`이 없어 먼저 설치해야 한다.
 
 ## 아키텍처
 
@@ -56,8 +58,13 @@ npx expo install <package>   # 의존성 추가는 npm install 대신 항상 이
 
 ### Mobile (`apps/mobile`)
 
-- 진입점은 `index.ts` → `App.tsx`. 현재 `App.tsx`가 화면 하나를 직접 렌더링하며 내비게이션 라이브러리는 설치되어 있지 않다.
-- `src/api/client.ts`의 `request<T>()`가 유일한 HTTP 경로다. 도메인별 API 함수(`src/api/workouts.ts`, `src/api/meals.ts`)는 이를 감싸고, 화면은 이 함수들만 호출한다. 서버 주소는 `EXPO_PUBLIC_API_URL` (기본 `http://localhost:3000`). 실기기에서는 localhost 대신 개발 머신의 IP를 써야 한다.
+- 내비게이션은 Expo Router(파일 기반)다. 진입점은 `expo-router/entry`이고 라우트는 `src/app/`에 있다: `_layout.tsx`(루트 Stack) → `(tabs)/_layout.tsx`(하단 탭 5개: 홈, 운동기록, 식단기록, 설정, 마이페이지). 탭을 추가·변경할 때는 `(tabs)/_layout.tsx`의 `NativeTabs.Trigger`와 같은 이름의 라우트 파일을 함께 고친다.
+- 탭 바는 JS 탭(`Tabs`)이 아니라 네이티브 탭(`expo-router/unstable-native-tabs`의 `NativeTabs`)이다. iOS 26에서는 떠 있는 리퀴드 글래스 바, Android에서는 Material 탭으로 렌더링된다. SDK 57에서는 unstable API이고 SDK 58부터 import 경로가 `expo-router/native-tabs`로 바뀐다. 탭 아이콘은 iOS는 SF Symbols(`sf`), Android는 Material 아이콘(`md`)을 각각 지정한다. Android는 탭이 최대 5개다.
+- 탭 바가 콘텐츠 위에 떠 있으므로 화면 하단에 고정하는 요소는 `useSafeAreaInsets().bottom`(탭 바 높이 포함)만큼 띄운다. `HomeScreen`의 플로팅 버튼 참고.
+- `src/app`의 라우트 파일은 `export { default } from '../../screens/...'` 한 줄짜리다. 화면 구현은 `src/screens/<도메인>/`에 두고, 라우트 파일에는 로직을 넣지 않는다.
+- `HomeScreen`은 하드코딩한 샘플 데이터를 쓰고 아직 API를 호출하지 않는다. 나머지 네 탭의 화면은 제목만 있는 자리표시자다.
+- 디자인 시스템: `src/theme`이 토큰(색상, 간격, 모서리, 글자, 그림자)의 유일한 출처이고, `src/components/ui`가 이를 쓰는 기본 컴포넌트, `src/components/*.tsx`가 도메인 조합 컴포넌트다. 화면과 조합 컴포넌트에서는 색상 코드·간격 숫자·글자 크기를 직접 쓰지 않고 토큰과 `ui` 컴포넌트를 쓴다. 텍스트는 RN `Text` 대신 `AppText`를 쓴다. 토큰 값, 컴포넌트 props, 레이아웃 규칙은 `docs/design-system.md`에 있으며, UI 작업 전에 읽고 `theme`이나 `ui` 컴포넌트를 바꾸면 이 문서도 함께 갱신한다. 기준 시안은 `reference/home.png`.
+- 화면 안의 아이콘은 `@react-native-vector-icons/ionicons`의 `Ionicons`를 쓴다 (`@expo/vector-icons`는 지원 중단 예정이라 쓰지 않는다). 라이트 모드 전용이고 커스텀 폰트는 미정이다.
+- `src/api/client.ts`의 `request<T>()`가 유일한 HTTP 경로다. 도메인별 API 함수(`src/api/workouts.ts`, `src/api/meals.ts`)는 이를 감싸고, 화면은 이 함수들만 호출한다. 서버 주소는 `EXPO_PUBLIC_API_URL` (기본 `http://localhost:3000`). Android 에뮬레이터에서는 `http://10.0.2.2:3000`, 실기기에서는 개발 머신의 IP를 써야 한다 (`apps/mobile/.env`, 변경 후 Expo 재시작).
 - `src/types/*`는 API의 DTO/응답 형태를 **손으로 복제한 것**이다. 두 앱 사이에 공유 패키지가 없으므로 `apps/api/src/*/dto`를 바꾸면 `apps/mobile/src/types`와 `src/api`도 함께 고쳐야 한다.
 - `apps/mobile/AGENTS.md`(Expo 템플릿이 생성, `apps/mobile/CLAUDE.md`가 import)에 Expo 관련 규칙이 있다. 핵심: Expo/RN API는 기억에 의존하지 말고 `package.json`의 SDK 버전에 맞는 문서(`https://docs.expo.dev/versions/v57.0.0/`)를 확인할 것, `ios/`·`android/` 디렉터리를 손으로 만들거나 고치지 말 것.
-- 주의: AGENTS.md는 Expo Router와 `src/app/` 라우트 디렉터리를 전제로 하지만 이 프로젝트는 blank 템플릿이라 `expo-router`가 없고 화면은 `src/screens/`에 있다. 내비게이션을 도입할 때 Expo Router로 전환할지 먼저 결정해야 한다.
