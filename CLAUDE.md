@@ -63,7 +63,9 @@ npx expo install <package>   # 의존성 추가는 npm install 대신 항상 이
 - 탭 바가 콘텐츠 위에 떠 있으므로 화면 하단에 고정하는 요소는 `useSafeAreaInsets().bottom`(탭 바 높이 포함)만큼 띄운다. `HomeScreen`의 플로팅 버튼 참고.
 - 탭 위로 쌓이는 화면(예: `workout-calendar`)은 `src/app/` 바로 아래에 라우트 파일을 두고, 헤더 옵션은 루트 `_layout.tsx`의 `Stack.Screen`에 등록한다. 루트 Stack은 기본적으로 헤더를 숨기므로 뒤로 가기 버튼이 필요한 화면만 `headerShown: true`로 켠다.
 - `src/app`의 라우트 파일은 `export { default } from '../../screens/...'` 한 줄짜리다. 화면 구현은 `src/screens/<도메인>/`에 두고, 라우트 파일에는 로직을 넣지 않는다.
-- `HomeScreen`은 하드코딩한 샘플 데이터를 쓰고 아직 API를 호출하지 않는다. 나머지 네 탭의 화면은 제목만 있는 자리표시자다.
+- `HomeScreen`은 하드코딩한 샘플 데이터를 쓰고 아직 API를 호출하지 않는다. 식단기록·설정 탭은 제목만 있는 자리표시자다.
+- 루틴, 종목, 운동 세션은 아직 API가 없고 `src/store/RoutineStore.tsx`(React context, 루트 `_layout.tsx`에서 제공)가 메모리에만 보관한다. 종목은 스토어 안의 고정 목록이고, 루틴과 세션은 앱을 다시 불러오면 사라진다. 화면에서는 `useRoutineStore()`로만 접근하며, API를 붙일 때 이 스토어 내부만 바꾼다.
+- 운동 흐름: 운동기록 탭 → `workout-start`(루틴 선택) → "이 루틴으로 시작"이 스토어에 `WorkoutSession`(상태 `active`)을 만들고 운동기록 탭으로 돌아와 카드로 표시한다. 세트 기록, 운동 종료(상태 `done`), 볼륨·칼로리 계산은 미구현이라 세션은 계속 "운동 중"이고 볼륨은 0, 칼로리는 `null`이다. 마이페이지 → `routines`(목록, 헤더의 추가 → `routines/new`), `exercises`(종목 목록).
 - 디자인 시스템: `src/theme`이 토큰(색상, 간격, 모서리, 글자, 그림자)의 유일한 출처이고, `src/components/ui`가 이를 쓰는 기본 컴포넌트, `src/components/*.tsx`가 도메인 조합 컴포넌트다. 화면과 조합 컴포넌트에서는 색상 코드·간격 숫자·글자 크기를 직접 쓰지 않고 토큰과 `ui` 컴포넌트를 쓴다. 텍스트는 RN `Text` 대신 `AppText`를 쓴다. 토큰 값, 컴포넌트 props, 레이아웃 규칙은 `docs/design-system.md`에 있으며, UI 작업 전에 읽고 `theme`이나 `ui` 컴포넌트를 바꾸면 이 문서도 함께 갱신한다. 기준 시안은 `reference/home.png`.
 - 화면 안의 아이콘은 `@react-native-vector-icons/ionicons`의 `Ionicons`를 쓴다 (`@expo/vector-icons`는 지원 중단 예정이라 쓰지 않는다). 라이트 모드 전용이고 커스텀 폰트는 미정이다.
 - 날짜 처리는 라이브러리 없이 `src/utils/date.ts`의 헬퍼를 쓴다. 주는 일요일 시작이고, 날짜 키는 로컬 시간 기준 `YYYY-MM-DD`(`toDateKey`)다.

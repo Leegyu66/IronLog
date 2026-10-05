@@ -82,7 +82,7 @@ import { colors, spacing, radius, typography, shadows } from '../theme';
 ## 기본 컴포넌트 (`components/ui`)
 
 ```ts
-import { AppText, Button, Card, Chip, Fab, IconButton, MacroStat, MonthCalendar, PageDots, ProgressBar, Screen, WeekStrip } from '../components/ui';
+import { AppText, Button, Card, Chip, Fab, HeaderButton, IconButton, ListRow, MacroStat, MonthCalendar, PageDots, ProgressBar, Screen, TextField, TextLink, WeekStrip } from '../components/ui';
 ```
 
 ### AppText
@@ -119,6 +119,15 @@ import { AppText, Button, Card, Chip, Fab, IconButton, MacroStat, MonthCalendar,
 
 `primary`는 검정 배경에 흰 글자, `secondary`는 흰 배경에 테두리. 높이 52의 알약 모양이다. 한 화면에 `primary`는 하나만 둔다.
 
+### TextLink
+
+밑줄이 그어진 작은 회색 글씨(`caption`, `textSecondary`)로 된 보조 동작. 주 버튼 바로 아래에 가운데 정렬로 두어, 주 동작보다 덜 눈에 띄는 선택지를 제시할 때 쓴다. `title`, `onPress`.
+
+```tsx
+<Button title="운동 시작하기" onPress={startWorkout} />
+<TextLink title="하루 쉬어가기" onPress={skipToday} />
+```
+
 ### Fab
 
 화면의 대표 추가 동작에 쓰는 지름 64의 검정 원형 버튼(+ 표시). 아이콘만 있으므로 `accessibilityLabel`이 필수다.
@@ -139,6 +148,40 @@ import { AppText, Button, Card, Chip, Fab, IconButton, MacroStat, MonthCalendar,
 
 ```tsx
 <IconButton icon="calendar-outline" accessibilityLabel="운동 캘린더 열기" onPress={openCalendar} />
+```
+
+### ListRow
+
+목록의 한 줄. 회색 테두리 카드 모양이며 제목, 선택적인 한 줄 부제, 오른쪽 표시로 이루어진다. 메뉴 항목, 루틴·종목 목록, 선택 목록에 쓴다.
+
+| prop | 타입 | 설명 |
+|---|---|---|
+| `title` | `string` | 굵은 제목 |
+| `subtitle` | `string` (선택) | 회색 작은 글씨. 한 줄을 넘으면 말줄임 |
+| `trailing` | `'chevron' \| 'checked' \| 'unchecked'` (선택) | `chevron`: 다른 화면으로 이동. `checked`/`unchecked`: 선택 상태 |
+| `onPress` | `() => void` (선택) | 없으면 누를 수 없는 표시용 줄 |
+
+줄 사이 간격은 `md`.
+
+```tsx
+<ListRow title="루틴" subtitle="3개의 루틴" trailing="chevron" onPress={openRoutines} />
+<ListRow title="스쿼트" subtitle="하체" trailing={selected ? 'checked' : 'unchecked'} onPress={toggle} />
+```
+
+### TextField
+
+라벨이 위에 붙은 한 줄 입력란(높이 52, 흰 배경, 테두리, 모서리 `md`). `label`과 RN `TextInput`의 props를 받는다.
+
+```tsx
+<TextField label="루틴 이름" placeholder="예: 하체 루틴" value={name} onChangeText={setName} />
+```
+
+### HeaderButton
+
+내비게이션 헤더 오른쪽에 두는 글자 버튼. 화면 안에서 `Stack.Screen`의 `headerRight`로 넣는다. `title`, `onPress`.
+
+```tsx
+<Stack.Screen options={{ headerRight: () => <HeaderButton title="추가" onPress={openCreate} /> }} />
 ```
 
 ### Chip
@@ -221,6 +264,15 @@ const [selectedDate, setSelectedDate] = useState(() => new Date());
 | `score`, `max` | `number` |
 | `message` | `string` |
 
+### WorkoutSessionCard
+
+루틴으로 시작한 그날의 운동 한 건을 요약하는 카드. 제목("10월 5일 운동")과 상태 칩(운동 전 / 운동 중 / 운동 후), 루틴 이름, 2x2 수치(운동시간, 총 볼륨, 운동부위, 소모칼로리)로 이루어진다. 값을 아직 알 수 없는 수치는 `-`로 표시한다.
+
+| prop | 타입 | 설명 |
+|---|---|---|
+| `session` | `WorkoutSession` | `types/routine` |
+| `now` | `number` | 운동시간을 계산할 기준 시각(ms). 화면이 주기적으로 갱신해 넘긴다 |
+
 ### LogCard
 
 식단과 운동 기록에 공통으로 쓰는 목록 카드.
@@ -274,6 +326,7 @@ import { Ionicons } from '@react-native-vector-icons/ionicons';
 </Screen>
 ```
 
+- 화면 맨 아래에 고정하는 주 버튼(저장, 시작)은 스크롤 영역 밖의 하단 영역에 두고, 조건이 채워지기 전에는 `disabled`로 둔다.
 - 화면 좌우 여백은 `xl`(24), 카드 사이 간격은 `lg`(16).
 - 플로팅 버튼은 오른쪽 `xl`, 아래는 하단 inset + `lg` 위치에 절대 배치하고, 스크롤 영역 아래쪽에 버튼에 가려지지 않을 만큼 여백을 둔다.
 
